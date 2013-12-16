@@ -5733,6 +5733,10 @@ static void wl12xx_op_channel_switch(struct ieee80211_hw *hw,
 		wl1271_debug(DEBUG_MAC80211, "mac80211 dropping ch switch");
 		wl12xx_for_each_wlvif_sta(wl, wlvif) {
 			struct ieee80211_vif *vif = wl12xx_wlvif_to_vif(wlvif);
+
+			if (!test_bit(WLVIF_FLAG_STA_ASSOCIATED, &wlvif->flags))
+				continue;
+
 			ieee80211_chswitch_done(vif, false);
 			ieee80211_connection_loss(vif);
 		}
@@ -5745,6 +5749,10 @@ static void wl12xx_op_channel_switch(struct ieee80211_hw *hw,
 
 	/* TODO: change mac80211 to pass vif as param */
 	wl12xx_for_each_wlvif_sta(wl, wlvif) {
+
+		if (!test_bit(WLVIF_FLAG_STA_ASSOCIATED, &wlvif->flags))
+			continue;
+
 		ret = wl12xx_cmd_channel_switch(wl, wlvif,
 						ch_sw->channel, ch_sw->count,
 						ch_sw->block_tx, false);
