@@ -265,6 +265,7 @@ static struct conf_drv_settings default_conf = {
 		.keep_alive_interval         = 55000,
 		.max_listen_interval         = 20,
 		.elp_timeout                 = 20,
+		.suspend_rx_ba_activity      = 0,
 	},
 	.itrim = {
 		.enable = false,
@@ -452,6 +453,7 @@ static struct conf_drv_settings default_conf = {
 
 static char *fwlog_param;
 static int fwlog_mem_blocks = -1;
+static int suspend_rx_ba_activity = 0;
 
 static bool core_dump_enabled = WL12XX_CORE_DUMP_ENABLED;
 static bool bug_on_recovery;
@@ -899,6 +901,9 @@ static void wl1271_conf_init(struct wl1271 *wl)
 		else
 			wl1271_error("Invalid tcxo parameter %s", tcxo_param);
 	}
+
+	if (suspend_rx_ba_activity != 0)
+		wl->conf.conn.suspend_rx_ba_activity = (u8) suspend_rx_ba_activity;
 }
 
 static int wl1271_plt_init(struct wl1271 *wl)
@@ -2496,6 +2501,14 @@ static int wl1271_configure_suspend_sta(struct wl1271 *wl,
 	if (ret < 0)
 		goto out;
 
+	// If Filter Enable, Configure FW to reject all ADDBA Frames in RX side
+	if (wl->conf.conn.suspend_rx_ba_activity != 0)
+	{
+			ret = wl12xx_acx_rx_ba_filter(wl, true);
+			if (ret < 0)
+				goto out;
+	}
+
 	ret = wl1271_acx_wake_up_conditions(wl, wlvif,
 				    wl->conf.conn.suspend_wake_up_event,
 				    wl->conf.conn.suspend_listen_interval);
@@ -2556,6 +2569,15 @@ static void wl1271_configure_resume(struct wl1271 *wl,
 		return;
 
 	if (is_sta) {
+
+		// If Filter Enable, Configure FW to pass ADDBA Frames in RX side
+		if (wl->conf.conn.suspend_rx_ba_activity != 0)
+		{
+			ret = wl12xx_acx_rx_ba_filter(wl, false);
+			if (ret < 0)
+				return;
+		}
+
 		ret = wl1271_acx_wake_up_conditions(wl, wlvif,
 				    wl->conf.conn.wake_up_event,
 				    wl->conf.conn.listen_interval);
