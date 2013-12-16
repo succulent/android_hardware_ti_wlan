@@ -4141,7 +4141,7 @@ static int wl1271_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		 * encryption key type was changed
 		 */
 		if (wlvif->bss_type == BSS_TYPE_STA_BSS &&
-		    (sta || key_type == KEY_WEP) &&
+		    (sta || (key_type == KEY_WEP && wlvif->encryption_type == KEY_NONE)) &&
 		    wlvif->encryption_type != key_type) {
 			wlvif->encryption_type = key_type;
 			ret = wl1271_cmd_build_arp_rsp(wl, wlvif);
