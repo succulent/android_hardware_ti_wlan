@@ -1915,5 +1915,3 @@ int wl12xx_acx_rx_ba_filter(struct wl1271 *wl,
 	kfree(acx);
 	return ret;
 }
-
-

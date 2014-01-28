@@ -2504,9 +2504,9 @@ static int wl1271_configure_suspend_sta(struct wl1271 *wl,
 	// If Filter Enable, Configure FW to reject all ADDBA Frames in RX side
 	if (wl->conf.conn.suspend_rx_ba_activity != 0)
 	{
-			ret = wl12xx_acx_rx_ba_filter(wl, true);
-			if (ret < 0)
-				goto out;
+		ret = wl12xx_acx_rx_ba_filter(wl, true);
+		if (ret < 0)
+			goto out;
 	}
 
 	ret = wl1271_acx_wake_up_conditions(wl, wlvif,
